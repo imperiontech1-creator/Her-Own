@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logger } from "@/lib/logger";
-import { sendResendEmail } from "@/lib/resend";
+import { sendResendEmail, escapeHtml } from "@/lib/resend";
 
 const ADMIN_EMAIL = process.env.HER_OWN_ADMIN_EMAIL;
 
@@ -120,18 +120,22 @@ export async function PATCH(req: NextRequest) {
         const email = (row as { email?: string; stripe_session_id?: string | null } | null)?.email;
         const sessionId = (row as { email?: string; stripe_session_id?: string | null } | null)?.stripe_session_id;
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) || req.nextUrl.origin;
-        const trackLink = baseUrl && sessionId ? `<p><a href="${baseUrl}/tracking/${sessionId}">Track your order</a></p>` : "";
+        const trackUrl = baseUrl && sessionId ? `${baseUrl}/tracking/${sessionId}` : "";
+        const trackLink = trackUrl ? `<p><a href="${escapeHtml(trackUrl)}">Track your order</a></p>` : "";
         if (email && email.trim()) {
           const tracking = [tracking_carrier, tracking_number].filter(Boolean).join(" ");
+          const onSent = (ok: boolean) => {
+            if (!ok) logger.warn("admin:orders", "Status email not sent", { orderId: rawId, status });
+          };
           if (status === "shipped") {
-            const html = `<p>Your order has been shipped.</p>${tracking ? `<p>Tracking: ${tracking}</p>` : ""}${trackLink}<p>Thank you for your order.</p>`;
-            sendResendEmail(email.trim(), "Your order has shipped – Her Own", html).catch(() => {});
+            const html = `<p>Your order has been shipped.</p>${tracking ? `<p>Tracking: ${escapeHtml(tracking)}</p>` : ""}${trackLink}<p>Thank you for your order.</p>`;
+            sendResendEmail(email.trim(), "Your order has shipped – Her Own", html).then(onSent).catch((e) => logger.warn("admin:orders", "Status email failed", { orderId: rawId, status, err: e }));
           } else if (status === "delivered") {
-            const html = `<p>Your order has been delivered.</p>${tracking ? `<p>Tracking: ${tracking}</p>` : ""}${trackLink}<p>Thank you for shopping with Her Own.</p>`;
-            sendResendEmail(email.trim(), "Your order was delivered – Her Own", html).catch(() => {});
+            const html = `<p>Your order has been delivered.</p>${tracking ? `<p>Tracking: ${escapeHtml(tracking)}</p>` : ""}${trackLink}<p>Thank you for shopping with Her Own.</p>`;
+            sendResendEmail(email.trim(), "Your order was delivered – Her Own", html).then(onSent).catch((e) => logger.warn("admin:orders", "Status email failed", { orderId: rawId, status, err: e }));
           } else if (status === "refunded") {
             const html = `<p>Your order has been refunded.</p><p>If you have questions, see our Policy page for contact information.</p>`;
-            sendResendEmail(email.trim(), "Your order was refunded – Her Own", html).catch(() => {});
+            sendResendEmail(email.trim(), "Your order was refunded – Her Own", html).then(onSent).catch((e) => logger.warn("admin:orders", "Status email failed", { orderId: rawId, status, err: e }));
           }
         }
       } catch (e) {

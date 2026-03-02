@@ -96,6 +96,14 @@ export function AdminContent() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [sort, setSort] = useState("created_at_desc");
+  const [emailConfigured, setEmailConfigured] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/email-status", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => data && typeof data.resendConfigured === "boolean" && setEmailConfigured(data.resendConfigured))
+      .catch(() => {});
+  }, []);
 
   const fetchOrders = useCallback(() => {
     setError("");
@@ -307,6 +315,12 @@ export function AdminContent() {
           <p className="mt-1 text-sm text-white/70">
             {total.toLocaleString()} order{total !== 1 ? "s" : ""} total
           </p>
+          {emailConfigured === false && (
+            <p className="mt-2 rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
+              Emails not configured — add <code className="rounded bg-white/10 px-1">RESEND_API_KEY</code> and{" "}
+              <code className="rounded bg-white/10 px-1">RESEND_FROM</code> in Netlify (or Doppler) so order confirmations and shipped emails are sent.
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={exportOrdersCsv} className="border-white/30 bg-white/5 text-white hover:bg-white/10">

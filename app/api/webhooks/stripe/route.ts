@@ -182,9 +182,9 @@ async function handleWebhook(req: NextRequest): Promise<NextResponse> {
 
     if (orderInserted && email) {
       try {
-        const { sendResendEmail } = await import("@/lib/resend");
-        const itemsList = items.map((i) => `${i.quantity} × ${i.name}`).join(", ");
-        const html = `<p>Your order is confirmed. Thank you for your purchase.</p><p>Order reference: #${orderRef}</p><p>Order total: $${(totalCents / 100).toFixed(2)}</p><p>Items: ${itemsList}</p><p><a href="${trackingUrl}">Track your order</a></p><p>We'll email you when it ships. Your statement will show "${discreetDescriptor}".</p>`;
+        const { sendResendEmail, escapeHtml } = await import("@/lib/resend");
+        const itemsList = items.map((i) => `${escapeHtml(String(i.quantity))} × ${escapeHtml(i.name)}`).join(", ");
+        const html = `<p>Your order is confirmed. Thank you for your purchase.</p><p>Order reference: #${escapeHtml(orderRef)}</p><p>Order total: $${(totalCents / 100).toFixed(2)}</p><p>Items: ${itemsList}</p><p><a href="${escapeHtml(trackingUrl)}">Track your order</a></p><p>We'll email you when it ships. Your statement will show "${escapeHtml(discreetDescriptor)}".</p>`;
         const sent = await sendResendEmail(email, "Order confirmed – Her Own", html);
         if (!sent) logger.warn(WEBHOOK_CONTEXT, "Customer confirmation email not sent (set RESEND_API_KEY and RESEND_FROM)");
       } catch (e) {

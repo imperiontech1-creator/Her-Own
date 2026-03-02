@@ -82,7 +82,7 @@ The app runs on Netlify with the same code; **Doppler-first:** Store all secrets
    - Publish directory: leave as set by Next.js detection (or `.next` if you set it manually).
 3. **Environment variables** (Site settings → Environment variables → Add variable / Import from .env):
    - Use the same variables as in the “Required secrets in Doppler” table above:  
-     `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLIC_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `HER_OWN_ADMIN_EMAIL` (optional).
+     `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLIC_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `HER_OWN_ADMIN_EMAIL` (optional). **For order confirmations and shipped emails**, add `RESEND_API_KEY` and `RESEND_FROM` (or sync from Doppler).
    - For Stripe webhooks, set the endpoint to `https://<your-netlify-site>/api/webhooks/stripe` and use the signing secret as `STRIPE_WEBHOOK_SECRET`.
 4. **Deploy** (triggered by push or “Deploy site” in the Netlify UI).
 
