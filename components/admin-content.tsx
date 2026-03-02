@@ -100,6 +100,17 @@ export function AdminContent() {
   const [csvInput, setCsvInput] = useState("");
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState("");
+  const [stats, setStats] = useState<{ totalSalesCents: number; todaySalesCents: number; orderCount: number } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/stats", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && typeof data.totalSalesCents === "number" && typeof data.todaySalesCents === "number" && typeof data.orderCount === "number")
+          setStats({ totalSalesCents: data.totalSalesCents, todaySalesCents: data.todaySalesCents, orderCount: data.orderCount });
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/email-status", { credentials: "include" })
@@ -345,6 +356,35 @@ export function AdminContent() {
           </Button>
         </div>
       </header>
+
+      <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="rounded-xl border border-cyan-500/40 bg-white/5 p-4 shadow-[0_0_20px_rgba(6,182,212,0.15)] backdrop-blur-xl">
+          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-cyan-400/90">Live sales</h2>
+          <p className="text-lg font-bold text-white animate-pulse">
+            Today: ${stats ? (stats.todaySalesCents / 100).toFixed(2) : "—"}
+          </p>
+          <p className="text-sm text-white/70">Total: ${stats ? (stats.totalSalesCents / 100).toFixed(2) : "—"} · {stats?.orderCount ?? "—"} orders</p>
+        </div>
+        <div className="rounded-xl border border-pink-500/40 bg-white/5 p-4 shadow-[0_0_20px_rgba(236,72,153,0.15)] backdrop-blur-xl">
+          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-pink-400/90">ROAS</h2>
+          <p className="text-lg font-bold text-white">—</p>
+          <p className="text-xs text-white/60">Connect ads for ROAS</p>
+        </div>
+        <div className="rounded-xl border border-cyan-500/30 bg-white/5 p-4 backdrop-blur-xl">
+          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-cyan-400/90">Dispute defense</h2>
+          <p className="text-sm font-medium text-white">Auto-submit on webhook</p>
+          <p className="text-xs text-white/60">Evidence sent on charge.dispute.created</p>
+        </div>
+        <div className="rounded-xl border border-pink-500/30 bg-white/5 p-4 backdrop-blur-xl">
+          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-pink-400/90">Email capture</h2>
+          <p className="text-sm font-medium text-white">{emailConfigured ? "Resend configured" : "0 leads"}</p>
+          <p className="text-xs text-white/60">Set HER_OWN_ABANDONED_CART_WEBHOOK for capture</p>
+        </div>
+        <div className="rounded-xl border border-white/20 bg-white/5 p-4 backdrop-blur-xl">
+          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-white/70">Support</h2>
+          <a href="mailto:imperiontech1@gmail.com" className="text-sm font-medium text-cyan-400 hover:underline">imperiontech1@gmail.com</a>
+        </div>
+      </section>
 
       <section className="mt-6 rounded-xl border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
         <h2 className="mb-3 font-heading text-lg font-semibold text-white">Products (CSV import)</h2>

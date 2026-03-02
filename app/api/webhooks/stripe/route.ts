@@ -193,5 +193,36 @@ async function handleWebhook(req: NextRequest): Promise<NextResponse> {
     }
   }
 
+  if (event.type === "charge.dispute.created" && supabaseAdmin) {
+    const dispute = event.data.object as Stripe.Dispute;
+    const chargeId = dispute.charge;
+    try {
+      const charge = await stripe.charges.retrieve(chargeId as string);
+      const paymentIntentId = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+      if (!paymentIntentId) {
+        return NextResponse.json({ received: true });
+      }
+      const { data: order } = await supabaseAdmin
+        .from("orders")
+        .select("tracking_number, tracking_carrier, stripe_session_id")
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .maybeSingle();
+      if (order) {
+        const evidence: Stripe.DisputeUpdateParams.Evidence = {};
+        if ((order as { tracking_number?: string; tracking_carrier?: string }).tracking_number && (order as { tracking_carrier?: string }).tracking_carrier) {
+          evidence.shipping_documentation = `${(order as { tracking_carrier: string }).tracking_carrier} ${(order as { tracking_number: string }).tracking_number}`;
+        }
+        if ((order as { stripe_session_id?: string }).stripe_session_id) {
+          evidence.receipt = (order as { stripe_session_id: string }).stripe_session_id;
+        }
+        await stripe.disputes.update(dispute.id, { evidence, submit: true });
+        logger.info(WEBHOOK_CONTEXT, "Dispute auto-defense submitted", { disputeId: dispute.id });
+      }
+    } catch (e) {
+      logger.error(WEBHOOK_CONTEXT, "Dispute auto-defense failed", e);
+    }
+    return NextResponse.json({ received: true });
+  }
+
   return NextResponse.json({ received: true });
 }
