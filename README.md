@@ -129,7 +129,7 @@ Stripe test mode: `4242 4242 4242 4242`.
 
 ## PWA and static assets
 
-The app icon is at **`/icon.svg`** (from `app/icon.svg`). **Do not use `/icon`** — it 404s. See **`ASSETS.md`** for the full checklist and where icon/manifest paths are set so we don’t reintroduce 404s. Optional: add `public/icons/icon-192.png` and `icon-512.png` for PNG PWA icons; the manifest currently uses the SVG.
+The app icon is at **`/icon.svg`** (from `app/icon.svg`). **Do not use `/icon`** — it 404s. Brand logo SVGs (wordmark, emblem, lockup; color modes) are in **`public/logo/`**; navbar uses `wordmark-black.svg`. See **`ASSETS.md`** for the full checklist and where icon/manifest paths are set so we don’t reintroduce 404s. Optional: add `public/icons/icon-192.png` and `icon-512.png` for PNG PWA icons; the manifest currently uses the SVG.
 
 ## Logging and fail-safes
 

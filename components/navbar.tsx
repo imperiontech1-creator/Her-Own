@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const totalItems = useCartStore((s) => s.totalItems());
@@ -13,11 +13,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/40 bg-white/70 backdrop-blur-md safe-top">
       <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link
-          href="/"
-          className="text-lg font-semibold text-text transition hover:text-rose-gold"
-        >
-          Her Own
+        <Link href="/" className="flex items-center transition opacity-90 hover:opacity-100" aria-label="Her Own home">
+          <Image src="/logo/wordmark-black.svg" alt="HER OWN" width={120} height={22} className="h-[22px] w-auto" priority />
         </Link>
         <div className="flex items-center gap-4">
           <Link
