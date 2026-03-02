@@ -116,15 +116,19 @@ export async function PATCH(req: NextRequest) {
     }
     if (status === "shipped" || status === "delivered" || status === "refunded") {
       try {
-        const { data: row } = await supabaseAdmin.from("orders").select("email, tracking_number, tracking_carrier").eq("id", rawId).single();
-        const email = (row as { email?: string } | null)?.email;
+        const { data: row } = await supabaseAdmin.from("orders").select("email, tracking_number, tracking_carrier, stripe_session_id").eq("id", rawId).single();
+        const r = row as { email?: string; stripe_session_id?: string | null } | null;
+        const email = r?.email;
+        const sessionId = r?.stripe_session_id;
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+        const trackLink = baseUrl && sessionId ? `<p><a href="${baseUrl}/tracking/${sessionId}">Track your order</a></p>` : "";
         if (email && email.trim()) {
           const tracking = [tracking_carrier, tracking_number].filter(Boolean).join(" ");
           if (status === "shipped") {
-            const html = `<p>Your order has been shipped.</p>${tracking ? `<p>Tracking: ${tracking}</p>` : ""}<p>Thank you for your order.</p>`;
+            const html = `<p>Your order has been shipped.</p>${tracking ? `<p>Tracking: ${tracking}</p>` : ""}${trackLink}<p>Thank you for your order.</p>`;
             sendResendEmail(email.trim(), "Your order has shipped – Her Own", html).catch(() => {});
           } else if (status === "delivered") {
-            const html = `<p>Your order has been delivered.</p>${tracking ? `<p>Tracking: ${tracking}</p>` : ""}<p>Thank you for shopping with Her Own.</p>`;
+            const html = `<p>Your order has been delivered.</p>${tracking ? `<p>Tracking: ${tracking}</p>` : ""}${trackLink}<p>Thank you for shopping with Her Own.</p>`;
             sendResendEmail(email.trim(), "Your order was delivered – Her Own", html).catch(() => {});
           } else if (status === "refunded") {
             const html = `<p>Your order has been refunded.</p><p>If you have questions, see our Policy page for contact information.</p>`;

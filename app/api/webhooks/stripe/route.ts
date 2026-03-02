@@ -145,6 +145,9 @@ async function handleWebhook(req: NextRequest): Promise<NextResponse> {
     }
 
     const origin = req.nextUrl.origin;
+    const emailOrigin = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) || origin;
+    const trackingUrl = `${emailOrigin}/tracking/${sessionId}`;
+    const orderRef = sessionId.slice(-8);
     const adminEmail = process.env.HER_OWN_ADMIN_EMAIL;
     if (adminEmail) {
       try {
@@ -160,7 +163,7 @@ async function handleWebhook(req: NextRequest): Promise<NextResponse> {
               totalCents,
               discreetDescriptor,
               shippingAddress,
-              origin,
+              origin: emailOrigin,
             },
           }),
         });
@@ -179,10 +182,11 @@ async function handleWebhook(req: NextRequest): Promise<NextResponse> {
       try {
         const { sendResendEmail } = await import("@/lib/resend");
         const itemsList = items.map((i) => `${i.quantity} × ${i.name}`).join(", ");
-        const html = `<p>Your order is confirmed. Thank you for your purchase.</p><p>Order total: $${(totalCents / 100).toFixed(2)}</p><p>Items: ${itemsList}</p><p>We'll email you when it ships. Your statement will show "${discreetDescriptor}".</p>`;
-        sendResendEmail(email, "Order confirmed – Her Own", html).catch(() => {});
-      } catch {
-        // best-effort
+        const html = `<p>Your order is confirmed. Thank you for your purchase.</p><p>Order reference: #${orderRef}</p><p>Order total: $${(totalCents / 100).toFixed(2)}</p><p>Items: ${itemsList}</p><p><a href="${trackingUrl}">Track your order</a></p><p>We'll email you when it ships. Your statement will show "${discreetDescriptor}".</p>`;
+        const sent = await sendResendEmail(email, "Order confirmed – Her Own", html);
+        if (!sent) logger.warn(WEBHOOK_CONTEXT, "Customer confirmation email not sent (set RESEND_API_KEY and RESEND_FROM)", { email: "[redacted]" });
+      } catch (e) {
+        logger.error(WEBHOOK_CONTEXT, "Customer confirmation email failed", e);
       }
     }
   }

@@ -45,6 +45,9 @@ Optional (Doppler or env):
 |----------|-------------|
 | `HER_OWN_SITE_OFFLINE` or `HER_OWN_MAINTENANCE` | Set to `1` to show "We'll be back soon" and block checkout/shop; tracking, admin, webhook, retailer, policy still work. |
 | `HER_OWN_PRICE_MULTIPLIER` | Checkout price multiplier (default `1.0`; e.g. `1.15` for 15% increase). |
+| `RESEND_API_KEY` | Resend API key for order confirmation, shipped, and supplier emails. If missing, emails are skipped (see logs). |
+| `RESEND_FROM` | Sender for Resend (e.g. `Her Own <orders@yourdomain.com>`). Required for any email. |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL for links in emails (e.g. `https://your-site.com`). If missing, request origin is used. |
 
 ## Setup
 

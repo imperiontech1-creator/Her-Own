@@ -14,7 +14,7 @@ export function validateEnv(): void {
   validated = true;
 
   const missing: string[] = [];
-  const optional = ["STRIPE_WEBHOOK_SECRET", "HER_OWN_ADMIN_EMAIL"];
+  const optional = ["STRIPE_WEBHOOK_SECRET", "HER_OWN_ADMIN_EMAIL", "RESEND_API_KEY", "RESEND_FROM"];
 
   if (!process.env.STRIPE_SECRET_KEY) missing.push("STRIPE_SECRET_KEY");
   if (!process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) missing.push("NEXT_PUBLIC_STRIPE_PUBLIC_KEY");
