@@ -44,10 +44,18 @@ export function CheckoutForm() {
       try {
         data = await res.json();
       } catch {
-        setError("Something went wrong. Try again.");
+        setError("Something went wrong. Please try again.");
         return;
       }
-      if (!res.ok) throw new Error(data?.error || "Checkout failed");
+      if (!res.ok) {
+        const safeMessages: Record<number, string> = {
+          429: "Too many attempts. Please wait a moment and try again.",
+          503: "We're temporarily unable to process checkout. Please try again shortly.",
+          500: "Something went wrong. Please try again.",
+        };
+        const msg = safeMessages[res.status] ?? (data?.error && typeof data.error === "string" && ["No valid items in cart", "Pricing configuration error. Please try again later.", "Invalid request body"].includes(data.error) ? data.error : "Something went wrong. Please try again.");
+        throw new Error(msg);
+      }
       if (data.url) {
         window.location.href = data.url;
         return;
@@ -56,9 +64,9 @@ export function CheckoutForm() {
         router.push(`/checkout/success?session_id=${data.sessionId}`);
         return;
       }
-      throw new Error("No redirect URL");
+      throw new Error("Something went wrong. Please try again.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

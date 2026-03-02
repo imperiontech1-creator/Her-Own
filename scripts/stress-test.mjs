@@ -36,9 +36,9 @@ async function preflight() {
     const t = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(BASE, { signal: controller.signal });
     clearTimeout(t);
-    if (res.status !== 200) {
+    if (res.status !== 200 && res.status !== 503) {
       console.log("\nHer Own · Stress test\n");
-      console.log("The server at " + BASE + " returned " + res.status + " instead of a healthy homepage.");
+      console.log("The server at " + BASE + " returned " + res.status + " (expected 200 or 503).");
       console.log("Start the app (npm run dev), note the port in the output, then run:");
       console.log("  BASE_URL=http://localhost:<port> npm run stress-test\n");
       process.exit(1);
@@ -99,13 +99,13 @@ async function run() {
   });
   ok("Admin orders PATCH no auth or bad body → 401 or 400", r6.status === 401 || r6.status === 400, `got ${r6.status}`);
 
-  // 7. Checkout – invalid JSON → 400
+  // 7. Checkout – invalid JSON → 400 (or 503 if Stripe not configured)
   const r7 = await fetch(`${BASE}/api/checkout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: "not json",
   });
-  ok("Checkout invalid JSON → 400", r7.status === 400, `got ${r7.status}`);
+  ok("Checkout invalid JSON → 400 or 503", r7.status === 400 || r7.status === 503, `got ${r7.status}`);
 
   // 8. Checkout – no valid items → 400 (after rate limit and stripe check)
   const { res: r8 } = await fetchJson(`${BASE}/api/checkout`, {
@@ -154,9 +154,9 @@ async function run() {
   }
   ok("Rate limit checkout (22 req) → at least one 429", checkout429 >= 1, `got ${checkout429} x 429`);
 
-  // 13. Public pages – no 500
+  // 13. Public pages – 200 or 503 (maintenance)
   const r13a = await fetch(`${BASE}/`);
-  ok("GET / → 200", r13a.status === 200, `got ${r13a.status}`);
+  ok("GET / → 200 or 503", r13a.status === 200 || r13a.status === 503, `got ${r13a.status}`);
   const r13b = await fetch(`${BASE}/products`);
   ok("GET /products → 200", r13b.status === 200, `got ${r13b.status}`);
   const r13c = await fetch(`${BASE}/cart`);

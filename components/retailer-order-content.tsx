@@ -42,7 +42,7 @@ export function RetailerOrderContent({ sessionId }: { sessionId: string }) {
         if (data.error) setError(data.error);
         else setOrder(data.order ?? null);
       })
-      .catch(() => setError("Failed to load order"))
+      .catch(() => setError(""))
       .finally(() => setLoading(false));
   }, [sessionId]);
 
@@ -68,11 +68,16 @@ export function RetailerOrderContent({ sessionId }: { sessionId: string }) {
         <Navbar />
         <main className="min-h-screen px-4 py-16">
           <div className="mx-auto max-w-lg text-center">
-            <p className="text-text/80">{error || "Order not found."}</p>
-            <p className="mt-2 text-sm text-text/60">This link may be invalid or the order may have been removed.</p>
-            <Link href="/" className="mt-6 inline-block">
-              <Button>Back to home</Button>
-            </Link>
+            <p className="text-text/80">We couldn’t load this order.</p>
+            <p className="mt-2 text-sm text-text/60">This link may be invalid or the order may have been removed. Need help? See our Policy page for contact information.</p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Link href="/policy">
+                <Button variant="outline">Policy & contact</Button>
+              </Link>
+              <Link href="/">
+                <Button>Back to home</Button>
+              </Link>
+            </div>
           </div>
         </main>
         <Footer />
@@ -93,7 +98,7 @@ export function RetailerOrderContent({ sessionId }: { sessionId: string }) {
       <main className="min-h-screen px-4 py-8 pb-24">
         <div className="mx-auto max-w-lg">
           <h1 className="text-2xl font-bold text-text">Retailer order</h1>
-          <p className="mt-1 text-sm text-text/70">Order placed {new Date(order.created_at).toLocaleDateString()}</p>
+          <p className="mt-1 text-sm text-text/70">Order placed {order.created_at ? new Date(order.created_at).toLocaleDateString() : "—"}</p>
 
           <div className="mt-6 rounded-xl border border-white/40 bg-white/50 p-6 backdrop-blur-sm space-y-4">
             <p className="text-sm font-medium text-text">Status: {order.status}</p>

@@ -40,7 +40,7 @@ export function TrackingContent({ orderId }: { orderId: string }) {
         if (data.error) setError(data.error);
         else setOrder(data.order ?? null);
       })
-      .catch(() => setError("Failed to load order"))
+      .catch(() => setError(""))
       .finally(() => setLoading(false));
   }, [orderId]);
 
@@ -66,13 +66,18 @@ export function TrackingContent({ orderId }: { orderId: string }) {
         <Navbar />
         <main className="min-h-screen px-4 py-16">
           <div className="mx-auto max-w-lg text-center">
-            <p className="text-text/80">{error || "Order not found."}</p>
+            <p className="text-text/80">We couldn’t load this order.</p>
             <p className="mt-2 text-sm text-text/60">
-              Use the link from your confirmation email, or enter your order ID.
+              Use the link from your confirmation email, or try again. Need help? See our Policy page for contact information.
             </p>
-            <Link href="/" className="mt-6 inline-block">
-              <Button>Back to home</Button>
-            </Link>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Link href="/policy">
+                <Button variant="outline">Policy & contact</Button>
+              </Link>
+              <Link href="/">
+                <Button>Back to home</Button>
+              </Link>
+            </div>
           </div>
         </main>
         <Footer />
@@ -87,6 +92,33 @@ export function TrackingContent({ orderId }: { orderId: string }) {
   ];
   const statusOrder = ["pending", "paid", "shipped", "delivered"];
   const currentIdx = statusOrder.indexOf(order.status);
+  const isRefunded = order.status === "refunded";
+
+  if (isRefunded) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen px-4 py-8 pb-24">
+          <div className="mx-auto max-w-lg">
+            <h1 className="text-2xl font-bold text-text">Order status</h1>
+            <p className="mt-1 text-sm text-text/70">
+              Order placed {order.created_at ? new Date(order.created_at).toLocaleDateString() : "—"}
+            </p>
+            <div className="mt-8 rounded-xl border border-white/40 bg-white/50 p-6 backdrop-blur-sm">
+              <p className="text-text/80">This order was refunded. If you have questions, see our Policy page for contact information.</p>
+            </div>
+            <Link href="/policy" className="mt-6 block">
+              <Button variant="outline" className="w-full">Policy & contact</Button>
+            </Link>
+            <Link href="/" className="mt-4 block">
+              <Button className="w-full">Back to home</Button>
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -95,7 +127,7 @@ export function TrackingContent({ orderId }: { orderId: string }) {
         <div className="mx-auto max-w-lg">
           <h1 className="text-2xl font-bold text-text">Order status</h1>
           <p className="mt-1 text-sm text-text/70">
-            Order placed {new Date(order.created_at).toLocaleDateString()}
+            Order placed {order.created_at ? new Date(order.created_at).toLocaleDateString() : "—"}
           </p>
 
           <div className="mt-8 rounded-xl border border-white/40 bg-white/50 p-6 backdrop-blur-sm">

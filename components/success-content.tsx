@@ -19,7 +19,9 @@ export function SuccessContent() {
     <div className="mx-auto max-w-lg px-4 py-16 text-center">
       <h1 className="text-2xl font-bold text-text">Thank you</h1>
       <p className="mt-2 text-text/80">
-        Your order is confirmed. We’ll email you a receipt and tracking when it ships. Your statement will show “Her Own Wellness Item”.
+        {sessionId
+          ? "Your order is confirmed. We’ll email you a receipt and tracking when it ships. Your statement will show “Her Own Wellness Item”."
+          : "Your order is confirmed. Check your email for your order confirmation and tracking link. Your statement will show “Her Own Wellness Item”."}
       </p>
       <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
         {sessionId && (

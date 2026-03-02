@@ -32,9 +32,8 @@ async function handleWebhook(req: NextRequest): Promise<NextResponse> {
   try {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
     logger.error(WEBHOOK_CONTEXT, "Signature verification failed", err);
-    return NextResponse.json({ error: `Webhook signature verification failed: ${message}` }, { status: 400 });
+    return NextResponse.json({ error: "Webhook signature verification failed" }, { status: 400 });
   }
 
   if (event.type === "checkout.session.completed") {
@@ -94,6 +93,11 @@ async function handleWebhook(req: NextRequest): Promise<NextResponse> {
           name: line.description ?? "Item",
         });
       }
+    }
+
+    if (items.length === 0) {
+      logger.warn(WEBHOOK_CONTEXT, "No line items for session, skipping order insert", { sessionId: sessionId.slice(0, 12) + "..." });
+      return NextResponse.json({ received: true });
     }
 
     const discreetDescriptor = "Her Own Wellness Item #" + sessionId.slice(-8);

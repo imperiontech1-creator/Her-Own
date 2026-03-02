@@ -86,6 +86,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    if (!session?.url) {
+      logger.error("checkout", "Stripe session missing url", { sessionId: session?.id });
+      return NextResponse.json(
+        { error: "Failed to create checkout session" },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (err) {
     logger.error("checkout", "Failed to create checkout session", err);

@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     if (!sent) logger.info("notify-supplier", "Supplier order (email not sent; set RESEND_API_KEY and RESEND_FROM to send)", { to, sessionId: order?.sessionId });
     return NextResponse.json({ ok: true });
   } catch (err) {
-    logger.error("notify-supplier", "Bad request", err);
-    return NextResponse.json({ error: "Bad request" }, { status: 400 });
+    logger.error("notify-supplier", "Request failed", err);
+    return NextResponse.json({ error: "Request failed" }, { status: 500 });
   }
 }
