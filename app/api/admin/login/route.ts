@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 
 const ADMIN_EMAIL = process.env.HER_OWN_ADMIN_EMAIL;
 const LOGIN_LIMIT_PER_MINUTE = 5;
@@ -16,6 +17,7 @@ export async function POST(req: NextRequest) {
   }
   const email = typeof body?.email === "string" ? body.email.trim() : "";
   if (!ADMIN_EMAIL || !email || email !== ADMIN_EMAIL) {
+    logger.warn("admin:login", "Auth failed");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const res = NextResponse.json({ ok: true });

@@ -9,7 +9,7 @@ const PREFIX = "[Her Own]";
 const REDACT_KEYS = new Set([
   "password", "token", "secret", "key", "authorization", "cookie", "api_key", "apikey",
   "stripe_secret", "service_role", "webhook_secret", "private_key", "access_token", "refresh_token",
-  "to", "email", "customer_email",
+  "to", "email", "customer_email", "session_id", "stripe_session_id", "sessionid",
 ]);
 
 function redact(obj: unknown): unknown {

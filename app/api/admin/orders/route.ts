@@ -55,7 +55,8 @@ export async function GET(req: NextRequest) {
       if (!Number.isNaN(d.getTime())) query = query.lte("created_at", d.toISOString());
     }
     if (search && search.length >= 2) {
-      const term = search.replace(/'/g, "''").replace(/\\/g, "\\\\");
+      const capped = search.slice(0, 200);
+      const term = capped.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_").replace(/'/g, "''");
       query = query.or(`email.ilike.%${term}%,id.ilike.%${term}%,stripe_session_id.ilike.%${term}%`);
     }
 
@@ -95,7 +96,8 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
   const { orderId, status, tracking_number, tracking_carrier } = body ?? {};
-  if (!orderId || typeof orderId !== "string" || !orderId.trim()) {
+  const rawId = typeof orderId === "string" ? orderId.trim() : "";
+  if (!rawId || rawId.length > 100) {
     return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
   }
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -107,14 +109,14 @@ export async function PATCH(req: NextRequest) {
   if (tracking_number !== undefined) updates.tracking_number = tracking_number;
   if (tracking_carrier !== undefined) updates.tracking_carrier = tracking_carrier;
   try {
-    const { error } = await supabaseAdmin.from("orders").update(updates).eq("id", orderId.trim());
+    const { error } = await supabaseAdmin.from("orders").update(updates).eq("id", rawId);
     if (error) {
       logger.error("admin:orders", "Update order failed", { orderId, error: error.message });
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
     if (status === "shipped" || status === "delivered" || status === "refunded") {
       try {
-        const { data: row } = await supabaseAdmin.from("orders").select("email, tracking_number, tracking_carrier").eq("id", orderId.trim()).single();
+        const { data: row } = await supabaseAdmin.from("orders").select("email, tracking_number, tracking_carrier").eq("id", rawId).single();
         const email = (row as { email?: string } | null)?.email;
         if (email && email.trim()) {
           const tracking = [tracking_carrier, tracking_number].filter(Boolean).join(" ");

@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
   }
   try {
     const { items, successUrl, cancelUrl, email } = body ?? {};
+    const safeItems = Array.isArray(items) ? items.slice(0, 50) : [];
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const success = successUrl || `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancel = cancelUrl || `${origin}/cart`;
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
     const lineItems: { price_data: { currency: string; product_data: { name: string; description?: string }; unit_amount: number }; quantity: number }[] = [];
     let totalCostCents = 0;
 
-    for (const item of items || []) {
+    for (const item of safeItems) {
       const product = getProductById(item.productId);
       if (!product || item.quantity < 1) continue;
       const unitAmount = Math.round(product.price * multiplier * 100);
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
       },
       metadata: {
         source: "her-own",
-        items_json: JSON.stringify((items || []).map((i) => ({ productId: i.productId, quantity: i.quantity }))),
+        items_json: JSON.stringify(safeItems.map((i) => ({ productId: i.productId, quantity: i.quantity }))),
       },
     });
 

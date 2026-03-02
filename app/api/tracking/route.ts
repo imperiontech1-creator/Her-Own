@@ -5,7 +5,7 @@ import { logger } from "@/lib/logger";
 export async function GET(req: NextRequest) {
   try {
     const sessionId = req.nextUrl.searchParams.get("sessionId")?.trim();
-    if (!sessionId) {
+    if (!sessionId || sessionId.length > 200) {
       return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
     }
     if (!supabaseAnon) {
