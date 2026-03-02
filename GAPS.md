@@ -8,6 +8,7 @@ Known gaps and optional improvements. Nothing here blocks running the app with D
 - **Webhook idempotency** – Stripe webhook checks for existing order by `stripe_session_id` before insert; duplicate events are skipped and logged as info.
 - **Admin logout** – `POST /api/admin/logout` clears the admin cookie (e.g. on shared devices).
 - **Supabase error messages** – Admin orders API returns generic "Database error" on 500; real error is logged only.
+- **Admin orders robustness** – Orders list and mark-shipped use safe JSON parse and normalized order rows so malformed API responses never crash the UI; Retry on error; pagination and PATCH body validated; admin login and login page handle network/non-JSON errors and invalid body without throwing.
 
 ## Optional / future
 

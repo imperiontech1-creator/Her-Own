@@ -17,8 +17,10 @@ In Doppler (project **her-own**), use one config for Netlify (e.g. **prd** or re
 | `STRIPE_WEBHOOK_SECRET` | Yes* | Stripe webhook signing secret (*add after step 3) |
 | `SUPABASE_URL` | Yes | Supabase project URL |
 | `SUPABASE_ANON_KEY` | Yes | Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role (required for **admin Orders** page) |
 | `HER_OWN_ADMIN_EMAIL` | No | Admin login email |
+
+The **admin Orders** page at `/admin` needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in Netlify (or synced from Doppler), and the same Supabase project must have the **`orders`** table (from `supabase-schema.sql`). If either is missing, orders will show "Database error" or "Database not configured" with a Retry button.
 
 Optional: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` if you use them in the app.
 

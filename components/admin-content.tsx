@@ -30,6 +30,49 @@ const SORT_OPTIONS = [
 
 type Pagination = { page: number; limit: number; total: number; totalPages: number };
 
+const VALID_STATUSES = ["pending", "paid", "shipped", "delivered", "refunded"] as const;
+
+/** Normalize API row so table/CSV never see undefined or invalid types; keeps UI standalone. */
+function normalizeOrder(row: unknown): OrderRow {
+  const r = row && typeof row === "object" ? (row as Record<string, unknown>) : {};
+  const status = typeof r.status === "string" && VALID_STATUSES.includes(r.status as (typeof VALID_STATUSES)[number]) ? r.status : "pending";
+  const totalCents = typeof r.total_cents === "number" && Number.isFinite(r.total_cents) ? r.total_cents : 0;
+  const items = Array.isArray(r.items) ? r.items : [];
+  return {
+    id: typeof r.id === "string" ? r.id : "",
+    stripe_session_id: typeof r.stripe_session_id === "string" ? r.stripe_session_id : null,
+    stripe_payment_intent_id: typeof r.stripe_payment_intent_id === "string" ? r.stripe_payment_intent_id : null,
+    email: typeof r.email === "string" ? r.email : "",
+    status,
+    items: items.map((it: unknown) => {
+      const i = it && typeof it === "object" ? (it as Record<string, unknown>) : {};
+      return {
+        productId: typeof i.productId === "string" ? i.productId : "",
+        quantity: typeof i.quantity === "number" && Number.isInteger(i.quantity) ? i.quantity : 0,
+        price: typeof i.price === "number" && Number.isFinite(i.price) ? i.price : 0,
+        name: typeof i.name === "string" ? i.name : "",
+      };
+    }),
+    total_cents: totalCents,
+    created_at: typeof r.created_at === "string" ? r.created_at : new Date().toISOString(),
+    updated_at: typeof r.updated_at === "string" ? r.updated_at : new Date().toISOString(),
+    tracking_number: typeof r.tracking_number === "string" ? r.tracking_number : null,
+    tracking_carrier: typeof r.tracking_carrier === "string" ? r.tracking_carrier : null,
+    discreet_descriptor: typeof r.discreet_descriptor === "string" ? r.discreet_descriptor : null,
+  };
+}
+
+function safePagination(p: unknown): Pagination {
+  const def = { page: 1, limit: 50, total: 0, totalPages: 1 };
+  if (!p || typeof p !== "object") return def;
+  const q = p as Record<string, unknown>;
+  const page = Math.max(1, Number(q.page)) || 1;
+  const limit = Math.max(1, Math.min(500, Number(q.limit))) || 50;
+  const total = Math.max(0, Number(q.total)) || 0;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  return { page, limit, total, totalPages };
+}
+
 export function AdminContent() {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 50, total: 0, totalPages: 1 });
@@ -50,6 +93,7 @@ export function AdminContent() {
   const [sort, setSort] = useState("created_at_desc");
 
   const fetchOrders = useCallback(() => {
+    setError("");
     setLoading(true);
     const [sortBy, sortOrder] = sort.includes("_asc") ? [sort.replace("_asc", ""), "asc"] : [sort.replace("_desc", ""), "desc"];
     const params = new URLSearchParams({
@@ -63,16 +107,24 @@ export function AdminContent() {
     if (dateFrom) params.set("dateFrom", dateFrom);
     if (dateTo) params.set("dateTo", dateTo);
     fetch(`/api/admin/orders?${params}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.error) {
-          setError(data.error);
+      .then(async (r) => {
+        let data: { error?: string; orders?: unknown[]; pagination?: unknown };
+        try {
+          data = await r.json();
+        } catch {
+          setError("Failed to load orders");
           setOrders([]);
-        } else {
-          setError("");
-          setOrders(Array.isArray(data.orders) ? data.orders : []);
-          setPagination(data.pagination ?? { page: 1, limit: 50, total: 0, totalPages: 1 });
+          return;
         }
+        if (data?.error) {
+          setError(String(data.error));
+          setOrders([]);
+          return;
+        }
+        setError("");
+        const raw = Array.isArray(data.orders) ? data.orders : [];
+        setOrders(raw.map(normalizeOrder));
+        setPagination(safePagination(data.pagination));
       })
       .catch(() => {
         setError("Failed to load orders");
@@ -97,23 +149,37 @@ export function AdminContent() {
   };
 
   const markShipped = async (orderId: string) => {
+    if (!orderId || !String(orderId).trim()) return;
     const num = trackingNumber.trim();
     const carrier = trackingCarrier.trim();
-    const res = await fetch("/api/admin/orders", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orderId,
-        status: "shipped",
-        tracking_number: num || undefined,
-        tracking_carrier: carrier || undefined,
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.error || "Update failed");
+    let res: Response;
+    try {
+      res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          status: "shipped",
+          tracking_number: num || undefined,
+          tracking_carrier: carrier || undefined,
+        }),
+      });
+    } catch {
+      setError("Update failed");
       return;
     }
+    let data: { error?: string };
+    try {
+      data = await res.json();
+    } catch {
+      setError("Update failed");
+      return;
+    }
+    if (!res.ok) {
+      setError(data?.error || "Update failed");
+      return;
+    }
+    setError("");
     setOrders((prev) =>
       prev.map((o) =>
         o.id === orderId
@@ -330,9 +396,14 @@ export function AdminContent() {
       </section>
 
       {error && (
-        <p className="mt-4 text-sm text-red-400" role="alert">
-          {error}
-        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-3" role="alert">
+          <p className="text-sm text-red-400">{error}</p>
+          {(error === "Database error" || error === "Database not configured" || error === "Failed to load orders") && (
+            <Button size="sm" variant="outline" onClick={() => fetchOrders()} className="border-white/30 text-white hover:bg-white/10">
+              Retry
+            </Button>
+          )}
+        </div>
       )}
 
       <div className="mt-6 overflow-hidden rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm">
@@ -349,8 +420,8 @@ export function AdminContent() {
               </tr>
             </thead>
             <tbody>
-              {orders.map((o) => (
-                <Fragment key={o.id}>
+              {orders.map((o, idx) => (
+                <Fragment key={o.id || `row-${idx}`}>
                   <tr
                     className={cn(
                       "border-b border-white/10 transition-colors hover:bg-white/5",
@@ -435,7 +506,7 @@ export function AdminContent() {
                     </td>
                   </tr>
                   {expandedId === o.id && (
-                    <tr key={`${o.id}-detail`} className="border-b border-white/10 bg-white/5">
+                    <tr key={`${o.id || idx}-detail`} className="border-b border-white/10 bg-white/5">
                       <td colSpan={6} className="py-3 pl-4 pr-4">
                         <div className="rounded-lg border border-white/10 bg-black/20 p-4">
                           <div className="text-xs font-medium uppercase tracking-wide text-white/60">Line items</div>

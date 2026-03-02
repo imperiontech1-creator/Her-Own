@@ -13,14 +13,27 @@ export default function AdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.trim() }),
-    });
-    const data = await res.json();
+    setError("");
+    let res: Response;
+    try {
+      res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+    } catch {
+      setError("Something went wrong. Try again.");
+      return;
+    }
+    let data: { error?: string };
+    try {
+      data = await res.json();
+    } catch {
+      setError("Something went wrong. Try again.");
+      return;
+    }
     if (!res.ok) {
-      setError(data.error || "Invalid");
+      setError(typeof data?.error === "string" ? data.error : "Invalid");
       return;
     }
     router.push("/admin");
