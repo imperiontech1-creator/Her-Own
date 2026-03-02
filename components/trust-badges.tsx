@@ -24,7 +24,7 @@ export function TrustBadges() {
   return (
     <section className="border-t border-rose-gold/20 bg-blush/20 px-4 py-12" id="why">
       <h2 className="mb-8 text-center font-heading text-2xl font-bold text-text">
-        Why Women Choose Her Own
+        Why Choose Her Own
       </h2>
       <div className="mx-auto flex max-w-4xl flex-wrap justify-center gap-8">
         {badges.map(({ icon: Icon, title, text }) => (

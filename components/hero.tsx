@@ -37,7 +37,7 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mx-auto mt-4 max-w-xl text-lg text-text/80"
         >
-          Clinically tested products designed to help you reconnect with your body — safely, privately, and confidently. Over 10,000 women already trust Her Own.
+          Clinically tested products designed to help you reconnect with your body — safely, privately, and confidently. Over 10,000 women already trust Her Own products.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -45,12 +45,18 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mt-8 flex flex-wrap items-center justify-center gap-4"
         >
-          <Link href="/products/her-pulse-therapy">
-            <Button size="lg" className="gap-2">
-              Shop Bestsellers
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
+          <motion.span
+            animate={{ scale: [1, 1.02, 1] }}
+            transition={{ duration: 2.5, repeat: Infinity, repeatType: "reverse" }}
+            className="inline-block"
+          >
+            <Link href="/products/her-pulse-therapy">
+              <Button size="lg" className="gap-2">
+                Shop Bestsellers
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </motion.span>
           <Link href="/products">
             <Button variant="outline" size="lg">
               View All Products
