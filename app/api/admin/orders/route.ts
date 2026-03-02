@@ -117,10 +117,9 @@ export async function PATCH(req: NextRequest) {
     if (status === "shipped" || status === "delivered" || status === "refunded") {
       try {
         const { data: row } = await supabaseAdmin.from("orders").select("email, tracking_number, tracking_carrier, stripe_session_id").eq("id", rawId).single();
-        const r = row as { email?: string; stripe_session_id?: string | null } | null;
-        const email = r?.email;
-        const sessionId = r?.stripe_session_id;
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+        const email = (row as { email?: string; stripe_session_id?: string | null } | null)?.email;
+        const sessionId = (row as { email?: string; stripe_session_id?: string | null } | null)?.stripe_session_id;
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) || req.nextUrl.origin;
         const trackLink = baseUrl && sessionId ? `<p><a href="${baseUrl}/tracking/${sessionId}">Track your order</a></p>` : "";
         if (email && email.trim()) {
           const tracking = [tracking_carrier, tracking_number].filter(Boolean).join(" ");

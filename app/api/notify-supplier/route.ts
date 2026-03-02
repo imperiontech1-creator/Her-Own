@@ -3,6 +3,13 @@ import { logger } from "@/lib/logger";
 import { sendResendEmail } from "@/lib/resend";
 
 export async function POST(req: NextRequest) {
+  const secret = process.env.HER_OWN_NOTIFY_SECRET;
+  if (secret) {
+    const header = req.headers.get("x-her-own-notify-secret");
+    if (header !== secret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
   let body: {
     to?: string;
     order?: {

@@ -151,9 +151,11 @@ async function handleWebhook(req: NextRequest): Promise<NextResponse> {
     const adminEmail = process.env.HER_OWN_ADMIN_EMAIL;
     if (adminEmail) {
       try {
+        const notifyHeaders: Record<string, string> = { "Content-Type": "application/json" };
+        if (process.env.HER_OWN_NOTIFY_SECRET) notifyHeaders["x-her-own-notify-secret"] = process.env.HER_OWN_NOTIFY_SECRET;
         const notifyRes = await fetch(`${origin}/api/notify-supplier`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: notifyHeaders,
           body: JSON.stringify({
             to: adminEmail,
             order: {
@@ -184,7 +186,7 @@ async function handleWebhook(req: NextRequest): Promise<NextResponse> {
         const itemsList = items.map((i) => `${i.quantity} × ${i.name}`).join(", ");
         const html = `<p>Your order is confirmed. Thank you for your purchase.</p><p>Order reference: #${orderRef}</p><p>Order total: $${(totalCents / 100).toFixed(2)}</p><p>Items: ${itemsList}</p><p><a href="${trackingUrl}">Track your order</a></p><p>We'll email you when it ships. Your statement will show "${discreetDescriptor}".</p>`;
         const sent = await sendResendEmail(email, "Order confirmed – Her Own", html);
-        if (!sent) logger.warn(WEBHOOK_CONTEXT, "Customer confirmation email not sent (set RESEND_API_KEY and RESEND_FROM)", { email: "[redacted]" });
+        if (!sent) logger.warn(WEBHOOK_CONTEXT, "Customer confirmation email not sent (set RESEND_API_KEY and RESEND_FROM)");
       } catch (e) {
         logger.error(WEBHOOK_CONTEXT, "Customer confirmation email failed", e);
       }

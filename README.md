@@ -48,6 +48,7 @@ Optional (Doppler or env):
 | `RESEND_API_KEY` | Resend API key for order confirmation, shipped, and supplier emails. If missing, emails are skipped (see logs). |
 | `RESEND_FROM` | Sender for Resend (e.g. `Her Own <orders@yourdomain.com>`). Required for any email. |
 | `NEXT_PUBLIC_SITE_URL` | Public site URL for links in emails (e.g. `https://your-site.com`). If missing, request origin is used. |
+| `HER_OWN_NOTIFY_SECRET` | If set, `/api/notify-supplier` requires header `x-her-own-notify-secret` (webhook sends it). Stops unauthorized notify calls. |
 
 ## Setup
 

@@ -120,14 +120,14 @@ async function run() {
     headers: { "Content-Type": "application/json" },
     body: "not json",
   });
-  ok("Notify-supplier invalid JSON → 400", r9.status === 400, `got ${r9.status}`);
+  ok("Notify-supplier invalid JSON → 400 or 401", r9.status === 400 || r9.status === 401, `got ${r9.status}`);
 
-  // 10. Notify-supplier – missing to/order → 400
+  // 10. Notify-supplier – missing to/order → 400 (or 401 if HER_OWN_NOTIFY_SECRET set)
   const { res: r10 } = await fetchJson(`${BASE}/api/notify-supplier`, {
     method: "POST",
     body: JSON.stringify({}),
   });
-  ok("Notify-supplier missing to/order → 400", r10.status === 400, `got ${r10.status}`);
+  ok("Notify-supplier missing to/order → 400 or 401", r10.status === 400 || r10.status === 401, `got ${r10.status}`);
 
   // 11. Rate limit – admin login 6 times (same client) → at least one 429
   let login429 = 0;
