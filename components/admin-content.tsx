@@ -59,6 +59,11 @@ function normalizeOrder(row: unknown): OrderRow {
     tracking_number: typeof r.tracking_number === "string" ? r.tracking_number : null,
     tracking_carrier: typeof r.tracking_carrier === "string" ? r.tracking_carrier : null,
     discreet_descriptor: typeof r.discreet_descriptor === "string" ? r.discreet_descriptor : null,
+    shipping_address:
+      r.shipping_address && typeof r.shipping_address === "object" && !Array.isArray(r.shipping_address)
+        ? (r.shipping_address as OrderRow["shipping_address"])
+        : null,
+    supplier_notified_at: typeof r.supplier_notified_at === "string" ? r.supplier_notified_at : null,
   };
 }
 
@@ -203,10 +208,16 @@ export function AdminContent() {
     return s;
   };
 
+  const formatShippingForCsv = (addr: OrderRow["shipping_address"]) => {
+    if (!addr) return "";
+    const parts = [addr.line1, addr.line2, [addr.city, addr.state, addr.postal_code].filter(Boolean).join(" "), addr.country].filter(Boolean);
+    return parts.join(", ");
+  };
+
   const exportOrdersCsv = () => {
-    const headers = ["id", "stripe_session_id", "email", "status", "total_cents", "created_at", "tracking_number", "tracking_carrier"];
+    const headers = ["id", "stripe_session_id", "email", "status", "total_cents", "created_at", "tracking_number", "tracking_carrier", "shipping_address"];
     const rows = orders.map((o) =>
-      [o.id, o.stripe_session_id ?? "", o.email, o.status, o.total_cents, o.created_at, o.tracking_number ?? "", o.tracking_carrier ?? ""].map(escapeCsv).join(",")
+      [o.id, o.stripe_session_id ?? "", o.email, o.status, o.total_cents, o.created_at, o.tracking_number ?? "", o.tracking_carrier ?? "", formatShippingForCsv(o.shipping_address)].map(escapeCsv).join(",")
     );
     const csv = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });

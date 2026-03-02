@@ -99,7 +99,11 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
   }
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  if (status) updates.status = status;
+  if (status && STATUS_VALUES.includes(status as (typeof STATUS_VALUES)[number])) {
+    updates.status = status;
+  } else if (status) {
+    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  }
   if (tracking_number !== undefined) updates.tracking_number = tracking_number;
   if (tracking_carrier !== undefined) updates.tracking_carrier = tracking_carrier;
   try {

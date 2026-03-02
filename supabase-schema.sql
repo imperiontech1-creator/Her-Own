@@ -11,6 +11,8 @@ create table if not exists orders (
   tracking_number text,
   tracking_carrier text,
   discreet_descriptor text,
+  shipping_address jsonb,
+  supplier_notified_at timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

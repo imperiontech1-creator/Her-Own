@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   }
   const { data, error } = await supabaseAnon
     .from("orders")
-    .select("id, email, status, total_cents, tracking_number, tracking_carrier, created_at")
+    .select("id, email, status, total_cents, tracking_number, tracking_carrier, created_at, updated_at, shipping_address, stripe_session_id, items")
     .eq("stripe_session_id", sessionId)
     .single();
   if (error || !data) {

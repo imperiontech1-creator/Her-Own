@@ -39,6 +39,13 @@ Required secrets in Doppler:
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role (server only) |
 | `HER_OWN_ADMIN_EMAIL` | Admin email (orders, supplier notify) |
 
+Optional (Doppler or env):
+
+| Variable | Description |
+|----------|-------------|
+| `HER_OWN_SITE_OFFLINE` or `HER_OWN_MAINTENANCE` | Set to `1` to show "We'll be back soon" and block checkout/shop; tracking, admin, webhook, retailer, policy still work. |
+| `HER_OWN_PRICE_MULTIPLIER` | Checkout price multiplier (default `1.0`; e.g. `1.15` for 15% increase). |
+
 ## Setup
 
 1. **Clone and install**
@@ -48,7 +55,7 @@ Required secrets in Doppler:
 
 2. **Supabase**
    - Create a project at [supabase.com](https://supabase.com).
-   - In SQL Editor, run `supabase-schema.sql` to create the `orders` table.
+   - In SQL Editor, run `supabase-schema.sql` to create the `orders` table. For existing projects, run `supabase-migration-shipping.sql` to add `shipping_address` and `supplier_notified_at`.
    - Add `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` to Doppler.
 
 3. **Stripe**
@@ -89,6 +96,7 @@ The repo includes a `netlify.toml` that sets the build command to `build:ci` so 
 | `/policy` | Age 21+, returns, shipping, privacy |
 | `/admin` | Orders list, mark shipped, CSV export (auth via `HER_OWN_ADMIN_EMAIL`) |
 | `/tracking/[orderId]` | Live status (orderId = Stripe session ID) |
+| `/retailer/order/[sessionId]` | Retailer order view (no login; link in supplier email) |
 
 ## Flows
 

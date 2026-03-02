@@ -17,6 +17,16 @@ export const supabaseAnon = url && anon ? createClient(url, anon) : null;
 export const supabaseAdmin =
   url && serviceRole ? createClient(url, serviceRole, { auth: { persistSession: false } }) : null;
 
+export type ShippingAddress = {
+  name?: string;
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  country?: string;
+};
+
 export type OrderRow = {
   id: string;
   stripe_session_id: string | null;
@@ -30,4 +40,6 @@ export type OrderRow = {
   tracking_number: string | null;
   tracking_carrier: string | null;
   discreet_descriptor: string | null;
+  shipping_address: ShippingAddress | null;
+  supplier_notified_at: string | null;
 };

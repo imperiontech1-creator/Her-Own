@@ -7,6 +7,16 @@ import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Package, Truck, CheckCircle } from "lucide-react";
 
+type ShippingAddress = {
+  name?: string;
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  country?: string;
+};
+
 type Order = {
   id: string;
   email: string;
@@ -15,6 +25,7 @@ type Order = {
   tracking_number: string | null;
   tracking_carrier: string | null;
   created_at: string;
+  shipping_address?: ShippingAddress | null;
 };
 
 export function TrackingContent({ orderId }: { orderId: string }) {
@@ -111,6 +122,15 @@ export function TrackingContent({ orderId }: { orderId: string }) {
           <p className="mt-4 text-center text-sm font-medium text-text">
             Status: {order.status}
           </p>
+
+          {order.shipping_address && (order.shipping_address.name || order.shipping_address.line1 || order.shipping_address.city) && (
+            <div className="mt-6 rounded-xl border border-white/40 bg-white/40 p-4">
+              <p className="text-sm font-medium text-text">Ship to</p>
+              <p className="mt-1 text-text/80">
+                {[order.shipping_address.name, order.shipping_address.line1, order.shipping_address.line2, [order.shipping_address.city, order.shipping_address.state, order.shipping_address.postal_code].filter(Boolean).join(", "), order.shipping_address.country].filter(Boolean).join(" · ")}
+              </p>
+            </div>
+          )}
 
           {order.tracking_number && (
             <div className="mt-6 rounded-xl border border-rose-gold/20 bg-blush/20 p-4">

@@ -98,6 +98,21 @@ async function handleWebhook(req: NextRequest): Promise<NextResponse> {
 
     const discreetDescriptor = "Her Own Wellness Item #" + sessionId.slice(-8);
 
+    const shippingDetails = session.shipping_details;
+    const shippingAddress =
+      shippingDetails?.address || shippingDetails?.name
+        ? {
+            name: shippingDetails?.name ?? undefined,
+            line1: shippingDetails?.address?.line1 ?? undefined,
+            line2: shippingDetails?.address?.line2 ?? undefined,
+            city: shippingDetails?.address?.city ?? undefined,
+            state: shippingDetails?.address?.state ?? undefined,
+            postal_code: shippingDetails?.address?.postal_code ?? undefined,
+            country: shippingDetails?.address?.country ?? undefined,
+          }
+        : null;
+
+    let orderInserted = false;
     if (supabaseAdmin) {
       const { data: existing } = await supabaseAdmin
         .from("orders")
@@ -115,26 +130,55 @@ async function handleWebhook(req: NextRequest): Promise<NextResponse> {
           items,
           total_cents: totalCents,
           discreet_descriptor: discreetDescriptor,
+          shipping_address: shippingAddress,
         });
         if (error) {
           logger.error(WEBHOOK_CONTEXT, "Supabase insert order failed", error);
+        } else {
+          orderInserted = true;
         }
       }
     }
 
+    const origin = req.nextUrl.origin;
     const adminEmail = process.env.HER_OWN_ADMIN_EMAIL;
     if (adminEmail) {
       try {
-        await fetch(`${req.nextUrl.origin}/api/notify-supplier`, {
+        const notifyRes = await fetch(`${origin}/api/notify-supplier`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             to: adminEmail,
-            order: { sessionId, email, items, totalCents, discreetDescriptor },
+            order: {
+              sessionId,
+              email,
+              items,
+              totalCents,
+              discreetDescriptor,
+              shippingAddress,
+              origin,
+            },
           }),
         });
+        if (notifyRes.ok && supabaseAdmin) {
+          await supabaseAdmin
+            .from("orders")
+            .update({ supplier_notified_at: new Date().toISOString() })
+            .eq("stripe_session_id", sessionId);
+        }
       } catch (e) {
         logger.error(WEBHOOK_CONTEXT, "Notify supplier failed", e);
+      }
+    }
+
+    if (orderInserted && email) {
+      try {
+        const { sendResendEmail } = await import("@/lib/resend");
+        const itemsList = items.map((i) => `${i.quantity} × ${i.name}`).join(", ");
+        const html = `<p>Your order is confirmed. Thank you for your purchase.</p><p>Order total: $${(totalCents / 100).toFixed(2)}</p><p>Items: ${itemsList}</p><p>We'll email you when it ships. Your statement will show "${discreetDescriptor}".</p>`;
+        sendResendEmail(email, "Order confirmed – Her Own", html).catch(() => {});
+      } catch {
+        // best-effort
       }
     }
   }

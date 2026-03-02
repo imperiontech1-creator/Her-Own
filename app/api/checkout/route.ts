@@ -30,11 +30,15 @@ export async function POST(req: NextRequest) {
     const success = successUrl || `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancel = cancelUrl || `${origin}/cart`;
 
+    const multiplier = Math.max(0.01, Math.min(10, parseFloat(process.env.HER_OWN_PRICE_MULTIPLIER || "1") || 1));
     const lineItems: { price_data: { currency: string; product_data: { name: string; description?: string }; unit_amount: number }; quantity: number }[] = [];
+    let totalCostCents = 0;
 
     for (const item of items || []) {
       const product = getProductById(item.productId);
       if (!product || item.quantity < 1) continue;
+      const unitAmount = Math.round(product.price * multiplier * 100);
+      totalCostCents += Math.round((product.cost ?? 0) * 100) * item.quantity;
       lineItems.push({
         price_data: {
           currency: "usd",
@@ -42,7 +46,7 @@ export async function POST(req: NextRequest) {
             name: product.name,
             description: product.tagline,
           },
-          unit_amount: Math.round(product.price * 100),
+          unit_amount: unitAmount,
         },
         quantity: item.quantity,
       });
@@ -55,12 +59,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const totalCents = lineItems.reduce((sum, li) => sum + (li.price_data.unit_amount * li.quantity), 0);
+    const minMarginCents = Math.ceil(totalCostCents * 1.05);
+    if (totalCents < totalCostCents || totalCents < minMarginCents) {
+      logger.warn("checkout", "Margin check failed", { totalCents, totalCostCents, minMarginCents });
+      return NextResponse.json(
+        { error: "Pricing configuration error. Please try again later." },
+        { status: 400 }
+      );
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
       success_url: success,
       cancel_url: cancel,
       customer_email: email || undefined,
+      shipping_address_collection: { allowed_countries: ["US"] },
       payment_intent_data: {
         statement_descriptor: DISCREET_DESCRIPTOR.substring(0, 22),
         metadata: { source: "her-own" },
