@@ -30,8 +30,35 @@ async function fetchJson(url, opts = {}) {
   return { res, data };
 }
 
+async function preflight() {
+  try {
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(BASE, { signal: controller.signal });
+    clearTimeout(t);
+    if (res.status !== 200) {
+      console.log("\nHer Own · Stress test\n");
+      console.log("The server at " + BASE + " returned " + res.status + " instead of a healthy homepage.");
+      console.log("Start the app (npm run dev), note the port in the output, then run:");
+      console.log("  BASE_URL=http://localhost:<port> npm run stress-test\n");
+      process.exit(1);
+    }
+    return true;
+  } catch (err) {
+    console.log("\nHer Own · Stress test\n");
+    const msg = err?.code === "ECONNREFUSED" || err?.code === "ENOTFOUND" || err?.name === "AbortError"
+      ? "The server at " + BASE + " is not reachable."
+      : "Could not reach " + BASE + ".";
+    console.log(msg);
+    console.log("Start the app (npm run dev), note the port in the output, then run:");
+    console.log("  BASE_URL=http://localhost:<port> npm run stress-test\n");
+    process.exit(1);
+  }
+}
+
 async function run() {
-  console.log("\nStress test – BASE_URL:", BASE, "\n");
+  await preflight();
+  console.log("\nStress test · " + BASE + "\n");
 
   // 1. Admin login – invalid JSON → 400
   const r1 = await fetch(`${BASE}/api/admin/login`, {
