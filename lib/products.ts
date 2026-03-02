@@ -13,12 +13,50 @@ export type Product = {
   badge?: string;
   bestFor?: string;
   stripePriceId?: string;
+  sku?: string;
+  hidden?: boolean;
 };
+
+/** Focus mode: only these two SKUs shown on storefront. */
+export const FOCUS_SLUGS = ["her-rose-therapy", "her-pulse-essential"] as const;
 
 export const PRODUCTS: Product[] = [
   {
+    id: "prod_rose",
+    slug: "her-rose-therapy",
+    name: "Her Rose Therapy",
+    shortName: "Rose Therapy",
+    tagline: "#1 Women's Choice",
+    description: "The rose-shaped design women choose most. Discreet, body-safe, and clinically trusted for satisfaction and comfort.",
+    clinicalCopy: "78% satisfaction in trials. Discreet shipping, free over $50. Medical-grade silicone, waterproof, rechargeable.",
+    price: 29,
+    cost: 2.8,
+    category: "vibe",
+    image: "/products/rose.png",
+    badge: "Rose Gold",
+    bestFor: "Beginners and everyday wellness.",
+    sku: "ROSE-001",
+  },
+  {
+    id: "prod_pulse",
+    slug: "her-pulse-essential",
+    name: "Her Pulse Essential",
+    shortName: "Pulse Essential",
+    tagline: "Essential pulse technology",
+    description: "Compact, powerful pulse technology. Travel-ready and discreet.",
+    clinicalCopy: "Ergonomic fit, adjustable stimulation. Used in wellness settings. Discreet shipping.",
+    price: 19,
+    cost: 5,
+    category: "vibe",
+    image: "/products/pulse.png",
+    badge: "Backup",
+    bestFor: "On-the-go and backup.",
+    sku: "PULSE-001",
+  },
+  {
     id: "prod_1",
     slug: "her-pulse-therapy",
+    hidden: true,
     name: "Her Pulse Therapy",
     shortName: "Pulse Therapy",
     tagline: "Clinically tested pleasure technology",
@@ -45,6 +83,7 @@ export const PRODUCTS: Product[] = [
     image: "/products/ring.png",
     badge: "10K+ Sold",
     bestFor: "Hands-free intimacy.",
+    hidden: true,
   },
   {
     id: "prod_3",
@@ -59,6 +98,7 @@ export const PRODUCTS: Product[] = [
     category: "lube",
     image: "/products/lube.png",
     bestFor: "Everyday hydration and smoothness.",
+    hidden: true,
   },
   {
     id: "prod_bundle_1",
@@ -73,6 +113,7 @@ export const PRODUCTS: Product[] = [
     category: "bundle",
     image: "/products/bundle.png",
     badge: "Save 10%",
+    hidden: true,
   },
   {
     id: "prod_4",
@@ -86,6 +127,7 @@ export const PRODUCTS: Product[] = [
     cost: 22,
     category: "vibe",
     image: "/products/quiet.png",
+    hidden: true,
   },
   {
     id: "prod_5",
@@ -99,6 +141,7 @@ export const PRODUCTS: Product[] = [
     cost: 29,
     category: "ring",
     image: "/products/silk-ring.png",
+    hidden: true,
   },
   {
     id: "prod_6",
@@ -125,6 +168,7 @@ export const PRODUCTS: Product[] = [
     cost: 15,
     category: "bullet",
     image: "/products/bullet.png",
+    hidden: true,
   },
   {
     id: "prod_8",
@@ -138,6 +182,7 @@ export const PRODUCTS: Product[] = [
     cost: 28,
     category: "vibe",
     image: "/products/wave.png",
+    hidden: true,
   },
   {
     id: "prod_9",
@@ -151,6 +196,7 @@ export const PRODUCTS: Product[] = [
     cost: 36,
     category: "ring",
     image: "/products/duo-ring.png",
+    hidden: true,
   },
   {
     id: "prod_10",
@@ -164,6 +210,7 @@ export const PRODUCTS: Product[] = [
     cost: 10,
     category: "lube",
     image: "/products/silk-touch.png",
+    hidden: true,
   },
   {
     id: "prod_11",
@@ -177,6 +224,7 @@ export const PRODUCTS: Product[] = [
     cost: 18,
     category: "bullet",
     image: "/products/bullet-plus.png",
+    hidden: true,
   },
   {
     id: "prod_12",
@@ -190,6 +238,7 @@ export const PRODUCTS: Product[] = [
     cost: 30,
     category: "vibe",
     image: "/products/bliss.png",
+    hidden: true,
   },
   {
     id: "prod_13",
@@ -203,6 +252,7 @@ export const PRODUCTS: Product[] = [
     cost: 26,
     category: "ring",
     image: "/products/snap-ring.png",
+    hidden: true,
   },
   {
     id: "prod_14",
@@ -216,6 +266,7 @@ export const PRODUCTS: Product[] = [
     cost: 11,
     category: "lube",
     image: "/products/aroma-free.png",
+    hidden: true,
   },
   {
     id: "prod_15",
@@ -229,8 +280,14 @@ export const PRODUCTS: Product[] = [
     cost: 17,
     category: "bullet",
     image: "/products/bullet-touch.png",
+    hidden: true,
   },
 ];
+
+/** Visible on storefront (focus mode: 2 SKUs). */
+export function getVisibleProducts(): Product[] {
+  return PRODUCTS.filter((p) => !p.hidden);
+}
 
 export function getProductBySlug(slug: string): Product | undefined {
   return PRODUCTS.find((p) => p.slug === slug);

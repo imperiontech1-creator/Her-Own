@@ -8,6 +8,7 @@ import { useCartStore } from "@/lib/store";
 import type { Product } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { ProductImageFallback } from "@/components/product-image-fallback";
 import { formatDollars } from "@/lib/utils";
 
 function ProductImage({ product }: { product: Product }) {
@@ -24,12 +25,7 @@ function ProductImage({ product }: { product: Product }) {
           onError={() => setImgError(true)}
         />
       ) : (
-        <div
-          className="h-full w-full bg-gradient-to-br from-blush/50 to-rose-gold/20 flex items-center justify-center text-2xl font-semibold text-rose-gold/80"
-          aria-hidden
-        >
-          {product.shortName.charAt(0)}
-        </div>
+        <ProductImageFallback product={product} size="card" />
       )}
       {product.badge && (
         <span className="absolute right-2 top-2 rounded-full bg-rose-gold px-2 py-0.5 text-xs font-medium text-white">

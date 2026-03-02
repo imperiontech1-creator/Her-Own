@@ -7,17 +7,24 @@ import { Minus, Plus, X } from "lucide-react";
 import { useCartStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { formatDollars } from "@/lib/utils";
-import { PRODUCTS } from "@/lib/products";
+import { getVisibleProducts } from "@/lib/products";
+import type { Product } from "@/lib/products";
 
-function ProductThumb({ name }: { name: string }) {
+function ProductThumb({ name, product }: { name: string; product?: Product | null }) {
+  const isRose = product?.slug === "her-rose-therapy";
+  const gradient = isRose
+    ? "bg-gradient-to-br from-[#f8e1e9] via-[#e8c4d0] to-[#d4a574]"
+    : product
+      ? "bg-gradient-to-br from-blush/50 via-[#e8d4dc] to-rose-gold/30"
+      : "bg-gradient-to-br from-blush/50 to-rose-gold/20";
   return (
-    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blush/50 to-rose-gold/20 text-lg font-semibold text-rose-gold/80">
+    <div className={`h-full w-full flex items-center justify-center ${gradient} text-lg font-semibold text-rose-gold/90`}>
       {name.charAt(0)}
     </div>
   );
 }
 
-const FREE_SHIPPING_THRESHOLD = 69;
+const FREE_SHIPPING_THRESHOLD = 50;
 
 function CartDrawerContent() {
   const { items, closeCart, updateQuantity, removeItem, totalCents, totalItems } =
@@ -25,9 +32,8 @@ function CartDrawerContent() {
   const totalDollars = totalCents() / 100;
   const needsMore = Math.max(0, FREE_SHIPPING_THRESHOLD - totalDollars);
 
-  const upsells = PRODUCTS.filter(
-    (p) => !items.some((i) => i.productId === p.id)
-  ).slice(0, 3);
+  const visible = getVisibleProducts();
+  const upsells = visible.filter((p) => !items.some((i) => i.productId === p.id)).slice(0, 3);
 
   return (
     <div className="flex h-full flex-col">
@@ -47,14 +53,14 @@ function CartDrawerContent() {
         ) : (
           <ul className="space-y-4">
             {items.map((item) => {
-              const product = PRODUCTS.find((p) => p.id === item.productId);
+              const product = visible.find((p) => p.id === item.productId);
               return (
                 <li
                   key={item.productId}
                   className="flex gap-3 rounded-xl border border-white/40 bg-white/40 p-3 backdrop-blur-sm"
                 >
                   <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-blush/30">
-                    <ProductThumb name={item.name} />
+                    <ProductThumb name={item.name} product={product} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-text truncate">{item.name}</p>

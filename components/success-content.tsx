@@ -33,6 +33,17 @@ export function SuccessContent() {
           <Button>Continue shopping</Button>
         </Link>
       </div>
+      <div className="mt-12 rounded-xl border border-rose-gold/20 bg-blush/10 p-6 text-left">
+        <p className="font-semibold text-text">Add more — 20% off when you bundle</p>
+        <p className="mt-1 text-sm text-text/70">
+          Her Pulse Essential pairs perfectly as a backup. Free shipping over $50.
+        </p>
+        <Link href="/products/her-pulse-essential" className="mt-4 inline-block">
+          <Button variant="outline" size="sm" className="border-rose-gold/50 text-rose-gold hover:bg-rose-gold/10">
+            Add Pulse Essential
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }

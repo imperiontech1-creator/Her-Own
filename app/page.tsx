@@ -1,8 +1,10 @@
 import { Navbar } from "@/components/navbar";
 import { CartDrawer } from "@/components/cart-drawer";
+import { FreeShipBar } from "@/components/free-ship-bar";
 import { Hero } from "@/components/hero";
 import { TrustBadges } from "@/components/trust-badges";
 import { BodySafeSection } from "@/components/body-safe-section";
+import { VideoCarousel } from "@/components/video-carousel";
 import { GlassCarousel } from "@/components/glass-carousel";
 import { ExternalRetailerProducts } from "@/components/ExternalRetailerProducts";
 import { StarterBundleSection } from "@/components/starter-bundle-section";
@@ -15,8 +17,10 @@ export default function HomePage() {
     <>
       <Navbar />
       <main>
+        <FreeShipBar />
         <Hero />
         <TrustBadges />
+        <VideoCarousel />
         <BodySafeSection />
         <GlassCarousel />
         <section className="px-4 py-12">

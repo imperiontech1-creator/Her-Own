@@ -59,7 +59,7 @@ Optional (Doppler or env):
 
 2. **Supabase**
    - Create a project at [supabase.com](https://supabase.com).
-   - In SQL Editor, run `supabase-schema.sql` to create the `orders` table. For existing projects, run `supabase-migration-shipping.sql` to add `shipping_address` and `supplier_notified_at`.
+   - In SQL Editor, run `supabase-schema.sql` to create the `orders` table. For existing projects, run `supabase-migration-shipping.sql` to add `shipping_address` and `supplier_notified_at`. For CSV product import and multi-supplier: run `supabase-migration-products-suppliers.sql` to add `suppliers` and `products` tables.
    - Add `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` to Doppler.
 
 3. **Stripe**
@@ -92,13 +92,15 @@ The repo includes a `netlify.toml` that sets the build command to `build:ci` so 
 
 | Route | Description |
 |-------|-------------|
-| `/` | Hero, 10K+ counter, glass carousel, trust badges |
-| `/products/[slug]` | Product detail, clinical copy, sticky “Claim Yours” |
-| `/cart` | Cart + bundle upsells (glass) |
+| `/` | Hero (Rose focus $29), free ship bar $50, trust badges, video carousel placeholder, glass carousel (2 SKUs) |
+| `/quiz` | One-question quiz → product recommendation (Beginner → Rose, Experienced → Pulse) |
+| `/products` | Focus mode: Her Rose Therapy + Her Pulse Essential only |
+| `/products/[slug]` | Product detail, clinical copy, sticky “Claim Yours” (haptic), free ship $50+ |
+| `/cart` | Cart + upsells (visible products), free ship countdown |
 | `/checkout` | Email + honeypot → Stripe Checkout (discreet descriptor) |
-| `/checkout/success` | Thank you + track order link |
+| `/checkout/success` | Thank you + track order + post-purchase upsell (Pulse bundle) |
 | `/policy` | Age 21+, returns, shipping, privacy |
-| `/admin` | Orders list, mark shipped, CSV export (auth via `HER_OWN_ADMIN_EMAIL`) |
+| `/admin` | Orders (Days open, Forward to Supplier), CSV product import, mark shipped, CSV export |
 | `/tracking/[orderId]` | Live status (orderId = Stripe session ID) |
 | `/retailer/order/[sessionId]` | Retailer order view (no login; link in supplier email) |
 
@@ -111,6 +113,15 @@ The repo includes a `netlify.toml` that sets the build command to `build:ci` so 
 ## Test card
 
 Stripe test mode: `4242 4242 4242 4242`.
+
+## Scaling (production MVP)
+
+- **Focus mode:** Storefront shows 2 SKUs only (Her Rose Therapy $29, Her Pulse Essential $19). Other products live in `lib/products.ts` with `hidden: true`.
+- **Pricing:** `HER_OWN_PRICE_MULTIPLIER` applies at checkout (keystone/min margin enforced in code). Dynamic rules can be extended via env or products table.
+- **Multi-supplier:** Run `supabase-migration-products-suppliers.sql` for `suppliers` and `products` tables. Admin CSV import: header `name,sku,wholesale,retail` (prices in dollars). Low stock (&lt;5) can hide from storefront once storefront reads from API.
+- **Inventory sync:** Placeholder for supplier APIs; add a cron or API route that updates `products.stock_quantity` when you integrate.
+- **Abandoned cart:** Checkout captures email; optional `HER_OWN_ABANDONED_CART_WEBHOOK` for Klaviyo or similar (not implemented; env documented in `.env.example`).
+- **Mobile:** `safe-top` / `safe-bottom` in globals.css for notches; haptic on CTAs where supported; cart persisted in localStorage (offline-capable). PWA install prompt and swipe-to-dismiss cart are UI enhancements you can add.
 
 ## PWA
 

@@ -97,6 +97,9 @@ export function AdminContent() {
   const [dateTo, setDateTo] = useState("");
   const [sort, setSort] = useState("created_at_desc");
   const [emailConfigured, setEmailConfigured] = useState<boolean | null>(null);
+  const [csvInput, setCsvInput] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState("");
 
   useEffect(() => {
     fetch("/api/admin/email-status", { credentials: "include" })
@@ -344,6 +347,46 @@ export function AdminContent() {
       </header>
 
       <section className="mt-6 rounded-xl border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
+        <h2 className="mb-3 font-heading text-lg font-semibold text-white">Products (CSV import)</h2>
+        <p className="mb-2 text-xs text-white/60">Header: name,sku,wholesale,retail (prices in dollars). Run supabase-migration-products-suppliers.sql first.</p>
+        <textarea
+          value={csvInput}
+          onChange={(e) => setCsvInput(e.target.value)}
+          placeholder={"name,sku,wholesale,retail\nHer Rose Therapy,ROSE-001,2.80,29"}
+          rows={3}
+          className="mb-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40"
+        />
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            disabled={importing || !csvInput.trim()}
+            onClick={async () => {
+              setImporting(true);
+              setImportResult("");
+              try {
+                const res = await fetch("/api/admin/products/import", {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ csv: csvInput.trim() }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (res.ok) setImportResult(`Imported ${data.count ?? 0} products.`);
+                else setImportResult(data.error || "Import failed.");
+              } catch (e) {
+                setImportResult("Request failed.");
+              }
+              setImporting(false);
+            }}
+            className="bg-rose-gold/90 text-white hover:bg-rose-gold"
+          >
+            {importing ? "Importing…" : "Import CSV"}
+          </Button>
+          {importResult && <span className="text-sm text-white/80">{importResult}</span>}
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-xl border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-[200px] flex-1">
             <Label className="text-xs text-white/70">Search</Label>
@@ -441,6 +484,7 @@ export function AdminContent() {
                 <th className="py-3 pr-4 font-medium text-white/90">Status</th>
                 <th className="py-3 pr-4 font-medium text-white/90">Total</th>
                 <th className="py-3 pr-4 font-medium text-white/90">Date</th>
+                <th className="py-3 pr-4 font-medium text-white/90">Days open</th>
                 <th className="py-3 pl-2 pr-4 font-medium text-white/90">Actions</th>
               </tr>
             </thead>
@@ -487,7 +531,16 @@ export function AdminContent() {
                     <td className="py-3 pr-4 text-white/90">
                       {new Date(o.created_at).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
                     </td>
+                    <td className="py-3 pr-4 text-white/80" title="Fulfillment: auto Day 7 placeholder">
+                      {Math.floor((Date.now() - new Date(o.created_at).getTime()) / 86400000)}d
+                    </td>
                     <td className="py-3 pl-2 pr-4">
+                      <a
+                        href={`mailto:?subject=Order ${o.id.slice(0, 8)} – Her Own&body=Order ID: ${o.id}%0D%0AEmail: ${encodeURIComponent(o.email)}%0D%0ATotal: $${(o.total_cents / 100).toFixed(2)}%0D%0AStatus: ${o.status}%0D%0A%0D%0AForward to supplier for fulfillment.`}
+                        className="mr-2 inline-block text-xs text-rose-gold hover:underline"
+                      >
+                        Forward to Supplier
+                      </a>
                       {o.status !== "shipped" && o.status !== "delivered" && (
                         <Button
                           variant="ghost"
@@ -532,7 +585,7 @@ export function AdminContent() {
                   </tr>
                   {expandedId === o.id && (
                     <tr key={`${o.id || idx}-detail`} className="border-b border-white/10 bg-white/5">
-                      <td colSpan={6} className="py-3 pl-4 pr-4">
+                      <td colSpan={7} className="py-3 pl-4 pr-4">
                         <div className="rounded-lg border border-white/10 bg-black/20 p-4">
                           <div className="text-xs font-medium uppercase tracking-wide text-white/60">Line items</div>
                           <ul className="mt-2 space-y-1.5">

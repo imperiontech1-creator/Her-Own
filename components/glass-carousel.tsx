@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { PRODUCTS } from "@/lib/products";
+import { getVisibleProducts } from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,14 +44,14 @@ export function GlassCarousel() {
     });
   };
 
-  const bestsellers = ["her-pulse-therapy", "her-rhythm-ring", "her-daily-essential"];
-  const featured = PRODUCTS.filter((p) => bestsellers.includes(p.slug));
+  const visible = getVisibleProducts();
+  const featured = visible.length > 0 ? visible : [];
 
   return (
     <section className="relative px-4 py-12" id="products">
       <div className="mx-auto max-w-6xl">
         <h2 className="mb-6 font-heading text-2xl font-bold text-text">
-          Our Bestselling Collection
+          Her Rose Therapy & Pulse Essential
         </h2>
         <div className="relative">
           {canScrollLeft && (

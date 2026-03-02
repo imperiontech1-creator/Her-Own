@@ -11,6 +11,7 @@ import { formatDollars } from "@/lib/utils";
 import { Navbar } from "@/components/navbar";
 import { CartDrawer } from "@/components/cart-drawer";
 import { Footer } from "@/components/footer";
+import { ProductImageFallback } from "@/components/product-image-fallback";
 import { Shield } from "lucide-react";
 
 export function ProductDetail({ product }: { product: Product }) {
@@ -38,9 +39,7 @@ export function ProductDetail({ product }: { product: Product }) {
                   onError={() => setImgError(true)}
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blush/40 to-rose-gold/20 text-6xl font-semibold text-rose-gold/70">
-                  {product.shortName.charAt(0)}
-                </div>
+                <ProductImageFallback product={product} size="detail" />
               )}
               {product.badge && (
                 <span className="absolute right-4 top-4 rounded-full bg-rose-gold px-3 py-1 text-sm font-medium text-white">
@@ -83,21 +82,22 @@ export function ProductDetail({ product }: { product: Product }) {
               <div className="mt-8 flex flex-col gap-3">
                 <Button
                   size="lg"
-                  className="sticky bottom-20 z-30 w-full md:bottom-6 md:mt-auto"
-                  onClick={() =>
+                  className="sticky bottom-20 z-30 w-full bg-rose-gold text-white hover:bg-rose-gold/90 md:bottom-6 md:mt-auto"
+                  onClick={() => {
+                    if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(10);
                     addItem({
                       productId: product.id,
                       slug: product.slug,
                       name: product.name,
                       price: product.price,
                       image: product.image,
-                    })
-                  }
+                    });
+                  }}
                 >
                   Claim Yours
                 </Button>
                 <p className="text-center text-xs text-text/60">
-                  Free discreet shipping on orders $69+
+                  Free discreet shipping on orders over $50
                 </p>
               </div>
             </div>

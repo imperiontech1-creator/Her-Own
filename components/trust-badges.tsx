@@ -5,13 +5,13 @@ import { Shield, Truck, Lock } from "lucide-react";
 const badges = [
   {
     icon: Shield,
-    title: "Clinically Tested",
-    text: "Designed with safety and wellness standards in mind.",
+    title: "10K+ Women",
+    text: "Trust Her Own for discreet, body-safe wellness.",
   },
   {
     icon: Truck,
-    title: "Discreet Delivery",
-    text: "Plain packaging. No labels. Free shipping on orders $69+.",
+    title: "Discreet Shipping Certified",
+    text: "Plain packaging. No labels. Free shipping on orders over $50.",
   },
   {
     icon: Lock,
