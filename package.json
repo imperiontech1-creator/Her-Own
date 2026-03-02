@@ -13,7 +13,8 @@
     "netlify:init": "npx netlify init",
     "netlify:import": "npx netlify env:import .env.netlify",
     "netlify:deploy": "npx netlify deploy --build --prod",
-    "netlify:ship": "npm run netlify:env && npx netlify env:import .env.netlify && npx netlify deploy --build --prod"
+    "netlify:ship": "npm run netlify:env && npx netlify env:import .env.netlify && npx netlify deploy --build --prod",
+    "stress-test": "node scripts/stress-test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",

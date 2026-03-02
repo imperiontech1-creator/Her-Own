@@ -19,6 +19,8 @@ In Doppler (project **her-own**), use one config for Netlify (e.g. **prd** or re
 | `SUPABASE_ANON_KEY` | Yes | Supabase anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role (required for **admin Orders** page) |
 | `HER_OWN_ADMIN_EMAIL` | No | Admin login email |
+| `RESEND_API_KEY` | No | Resend API key for “order shipped” and supplier emails |
+| `RESEND_FROM` | No* | Sender for Resend (e.g. `Her Own <orders@yourdomain.com>`); *required if using Resend |
 
 The **admin Orders** page at `/admin` needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in Netlify (or synced from Doppler), and the same Supabase project must have the **`orders`** table (from `supabase-schema.sql`). If either is missing, orders will show "Database error" or "Database not configured" with a Retry button.
 

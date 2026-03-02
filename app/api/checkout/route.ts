@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { getProductById } from "@/lib/products";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const DISCREET_DESCRIPTOR = "HER OWN WELLNESS";
+const CHECKOUT_LIMIT_PER_MINUTE = 20;
 
 export async function POST(req: NextRequest) {
+  if (!checkRateLimit(req, CHECKOUT_LIMIT_PER_MINUTE)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
   if (!stripe) {
     return NextResponse.json(
       { error: "Stripe is not configured" },
@@ -13,15 +18,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  let body: { items?: { productId: string; quantity: number }[]; successUrl?: string; cancelUrl?: string; email?: string };
   try {
-    const body = await req.json();
-    const { items, successUrl, cancelUrl, email } = body as {
-      items: { productId: string; quantity: number }[];
-      successUrl?: string;
-      cancelUrl?: string;
-      email?: string;
-    };
-
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+  try {
+    const { items, successUrl, cancelUrl, email } = body ?? {};
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const success = successUrl || `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancel = cancelUrl || `${origin}/cart`;
@@ -63,7 +67,7 @@ export async function POST(req: NextRequest) {
       },
       metadata: {
         source: "her-own",
-        items_json: JSON.stringify(items.map((i) => ({ productId: i.productId, quantity: i.quantity }))),
+        items_json: JSON.stringify((items || []).map((i) => ({ productId: i.productId, quantity: i.quantity }))),
       },
     });
 

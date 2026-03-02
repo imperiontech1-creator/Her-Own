@@ -35,7 +35,7 @@ const VALID_STATUSES = ["pending", "paid", "shipped", "delivered", "refunded"] a
 /** Normalize API row so table/CSV never see undefined or invalid types; keeps UI standalone. */
 function normalizeOrder(row: unknown): OrderRow {
   const r = row && typeof row === "object" ? (row as Record<string, unknown>) : {};
-  const status = typeof r.status === "string" && VALID_STATUSES.includes(r.status as (typeof VALID_STATUSES)[number]) ? r.status : "pending";
+  const status = (typeof r.status === "string" && VALID_STATUSES.includes(r.status as (typeof VALID_STATUSES)[number]) ? r.status : "pending") as OrderRow["status"];
   const totalCents = typeof r.total_cents === "number" && Number.isFinite(r.total_cents) ? r.total_cents : 0;
   const items = Array.isArray(r.items) ? r.items : [];
   return {

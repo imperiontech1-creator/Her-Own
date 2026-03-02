@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logger } from "@/lib/logger";
+import { sendResendEmail } from "@/lib/resend";
 
 const ADMIN_EMAIL = process.env.HER_OWN_ADMIN_EMAIL;
 
@@ -106,6 +107,15 @@ export async function PATCH(req: NextRequest) {
     if (error) {
       logger.error("admin:orders", "Update order failed", { orderId, error: error.message });
       return NextResponse.json({ error: "Database error" }, { status: 500 });
+    }
+    if (status === "shipped") {
+      const { data: row } = await supabaseAdmin.from("orders").select("email, tracking_number, tracking_carrier").eq("id", orderId.trim()).single();
+      const email = (row as { email?: string } | null)?.email;
+      if (email && email.trim()) {
+        const tracking = [tracking_carrier, tracking_number].filter(Boolean).join(" ");
+        const html = `<p>Your order has been shipped.</p>${tracking ? `<p>Tracking: ${tracking}</p>` : ""}<p>Thank you for your order.</p>`;
+        sendResendEmail(email.trim(), "Your order has shipped – Her Own", html).catch(() => {});
+      }
     }
     return NextResponse.json({ ok: true });
   } catch (err) {

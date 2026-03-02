@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const ADMIN_EMAIL = process.env.HER_OWN_ADMIN_EMAIL;
+const LOGIN_LIMIT_PER_MINUTE = 5;
 
 export async function POST(req: NextRequest) {
+  if (!checkRateLimit(req, LOGIN_LIMIT_PER_MINUTE)) {
+    return NextResponse.json({ error: "Too many attempts" }, { status: 429 });
+  }
   let body: { email?: string };
   try {
     body = (await req.json()) as { email?: string };

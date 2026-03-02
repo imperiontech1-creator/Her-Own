@@ -33,6 +33,14 @@
 
 Served at `/images/seamless-body-safe.png` and `/images/prioritize-pleasure.png`. Replace with final brand assets when ready.
 
+## Product images
+
+Product images live under **`public/products/`**. Paths are set in `lib/products.ts` (each product has an `image` field). The UI shows the image when it loads; if the file is missing or fails to load, it falls back to a gradient with the product initial. Add files with these names to show real product photos:
+
+- `pulse.png`, `ring.png`, `lube.png`, `bundle.png`, `quiet.png`, `silk-ring.png`, `hydrate.png`, `bullet.png`, `wave.png`, `duo-ring.png`, `silk-touch.png`, `bullet-plus.png`, `bliss.png`, `snap-ring.png`, `aroma-free.png`, `bullet-touch.png`
+
+Or use a CDN: set `image` in `lib/products.ts` to the full URL and add the domain to `next.config.ts` `images.remotePatterns`.
+
 ## Optional (currently not required)
 
 - `public/favicon.ico` – not used; `/favicon.ico` redirects to `/icon.svg`.

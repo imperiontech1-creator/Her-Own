@@ -40,8 +40,14 @@ export function CheckoutForm() {
           email: email || undefined,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Checkout failed");
+      let data: { error?: string; url?: string; sessionId?: string };
+      try {
+        data = await res.json();
+      } catch {
+        setError("Something went wrong. Try again.");
+        return;
+      }
+      if (!res.ok) throw new Error(data?.error || "Checkout failed");
       if (data.url) {
         window.location.href = data.url;
         return;

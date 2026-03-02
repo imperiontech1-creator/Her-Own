@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useCartStore } from "@/lib/store";
 import type { Product } from "@/lib/products";
@@ -13,6 +15,7 @@ import { Shield } from "lucide-react";
 
 export function ProductDetail({ product }: { product: Product }) {
   const addItem = useCartStore((s) => s.addItem);
+  const [imgError, setImgError] = useState(false);
 
   return (
     <>
@@ -25,9 +28,20 @@ export function ProductDetail({ product }: { product: Product }) {
               animate={{ opacity: 1, x: 0 }}
               className="relative aspect-square overflow-hidden rounded-2xl border border-white/40 bg-blush/20 backdrop-blur-sm"
             >
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blush/40 to-rose-gold/20 text-6xl font-semibold text-rose-gold/70">
-                {product.shortName.charAt(0)}
-              </div>
+              {!imgError && product.image ? (
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blush/40 to-rose-gold/20 text-6xl font-semibold text-rose-gold/70">
+                  {product.shortName.charAt(0)}
+                </div>
+              )}
               {product.badge && (
                 <span className="absolute right-4 top-4 rounded-full bg-rose-gold px-3 py-1 text-sm font-medium text-white">
                   {product.badge}

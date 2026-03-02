@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useCartStore } from "@/lib/store";
 import type { Product } from "@/lib/products";
@@ -9,14 +11,26 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { formatDollars } from "@/lib/utils";
 
 function ProductImage({ product }: { product: Product }) {
+  const [imgError, setImgError] = useState(false);
   return (
     <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-blush/30">
-      <div
-        className="h-full w-full bg-gradient-to-br from-blush/50 to-rose-gold/20 flex items-center justify-center text-2xl font-semibold text-rose-gold/80"
-        aria-hidden
-      >
-        {product.shortName.charAt(0)}
-      </div>
+      {!imgError && product.image ? (
+        <Image
+          src={product.image}
+          alt={product.name}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 33vw"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <div
+          className="h-full w-full bg-gradient-to-br from-blush/50 to-rose-gold/20 flex items-center justify-center text-2xl font-semibold text-rose-gold/80"
+          aria-hidden
+        >
+          {product.shortName.charAt(0)}
+        </div>
+      )}
       {product.badge && (
         <span className="absolute right-2 top-2 rounded-full bg-rose-gold px-2 py-0.5 text-xs font-medium text-white">
           {product.badge}
