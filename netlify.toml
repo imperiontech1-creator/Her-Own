@@ -1,0 +1,9 @@
+# Her Own – Netlify deploy (Next.js 15)
+# Netlify auto-detects Next.js and uses the OpenNext adapter. No plugin required.
+
+[build]
+  command = "npm run build:ci"
+  # Publish dir is set by Netlify's Next.js detection; don't override.
+
+# Env vars: set in Netlify UI (Site settings → Environment variables).
+# Use the same variables as in README "Required secrets in Doppler" (no Doppler on Netlify).

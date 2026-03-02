@@ -1,0 +1,19 @@
+---
+description: Extend the codebase with minimal, localized changes only; no refactors or shared/core edits unless authorized
+alwaysApply: true
+---
+
+# Extension-only changes
+
+When extending this codebase:
+
+- **Mirror existing patterns** – Match naming, structure, and style already used in the file or feature area.
+- **Smallest possible localized diff** – Add or change only what is strictly needed; avoid touching unrelated lines or files.
+- **Do not** unless explicitly authorized:
+  - Refactor existing code
+  - Rename symbols, files, or routes
+  - Reformat or reorganize code
+  - Introduce new abstractions, helpers, or shared utilities
+  - Modify shared or core code (e.g. lib/, core components, config) except where the change is required for the requested feature
+
+Prefer adding new code (routes, components, API params) that follows current conventions over changing existing implementations.
