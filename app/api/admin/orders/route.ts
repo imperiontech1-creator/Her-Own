@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
 
   if (error) {
     logger.error("admin:orders", "List orders failed", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
   }
 
   const orders = (data ?? []) as Record<string, unknown>[];
@@ -94,7 +94,7 @@ export async function PATCH(req: NextRequest) {
   const { error } = await supabaseAdmin.from("orders").update(updates).eq("id", orderId);
   if (error) {
     logger.error("admin:orders", "Update order failed", { orderId, error: error.message });
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
   }
   return NextResponse.json({ ok: true });
 }

@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
     .eq("stripe_session_id", sessionId)
     .single();
   if (error || !data) {
+    if (error) logger.error("tracking", "Order lookup failed", { sessionId: sessionId.slice(0, 12) + "...", error });
     return NextResponse.json({ order: null, error: "Order not found" });
   }
   return NextResponse.json({ order: data });

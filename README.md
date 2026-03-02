@@ -18,7 +18,7 @@ Production-ready Next.js 15.2 intimate wellness dropshipping store. Clean medica
 ```bash
 # Install Doppler CLI: https://docs.doppler.com/docs/install-cli
 doppler login
-doppler setup   # project: her-own, config: dev
+doppler setup   # project: her-own, config: dev_personal (or dev)
 
 # Dev
 doppler run -- npm run dev
@@ -64,8 +64,7 @@ Required secrets in Doppler:
 
 ## Deploy to Netlify (public site)
 
-The app runs on Netlify with the same code; no Doppler on the platform. Use Netlify’s environment variables instead.
-
+The app runs on Netlify with the same code; **Doppler-first:** Store all secrets in Doppler; sync to Netlify via [Doppler → Netlify](https://docs.doppler.com/docs/netlify). Full steps: **NETLIFY_DEPLOY.md**. Keys: **DOPPLER_NETLIFY_KEYS.md**. Optional: `npm run netlify:env` → import `.env.netlify` in Netlify. No Doppler on the platform for build; sync env from Doppler.
 1. **Push** the repo to GitHub/GitLab/Bitbucket and connect it in [Netlify](https://app.netlify.com) (Add new site → Import from Git).
 2. **Build settings** (usually auto-detected):
    - Build command: `npm run build:ci`

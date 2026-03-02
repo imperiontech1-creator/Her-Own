@@ -26,6 +26,13 @@
 - `app/icon.svg` – app icon (Next serves it at `/icon.svg`).
 - `public/manifest.json` – PWA manifest; must reference `/icon.svg` in `icons[].src`.
 
+## Homepage marketing images
+
+- `public/images/seamless-body-safe.png` – Body-safe design section (BodySafeSection).
+- `public/images/prioritize-pleasure.png` – Prioritize pleasure banner (PrioritizePleasureBanner).
+
+Served at `/images/seamless-body-safe.png` and `/images/prioritize-pleasure.png`. Replace with final brand assets when ready.
+
 ## Optional (currently not required)
 
 - `public/favicon.ico` – not used; `/favicon.ico` redirects to `/icon.svg`.

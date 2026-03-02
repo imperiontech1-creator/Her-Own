@@ -7,6 +7,7 @@ Known gaps and optional improvements. Nothing here blocks running the app with D
 - **.gitignore** – Added so `.env`, `.env*.local`, `.next`, `node_modules` are never committed. All secrets from Doppler only.
 - **Webhook idempotency** – Stripe webhook checks for existing order by `stripe_session_id` before insert; duplicate events are skipped and logged as info.
 - **Admin logout** – `POST /api/admin/logout` clears the admin cookie (e.g. on shared devices).
+- **Supabase error messages** – Admin orders API returns generic "Database error" on 500; real error is logged only.
 
 ## Optional / future
 
@@ -15,8 +16,7 @@ Known gaps and optional improvements. Nothing here blocks running the app with D
 - **Customer “order shipped” email** – Spec said “Admin marks shipped → customer notified”. Currently we only update status; no email is sent to the customer. Add Resend/SendGrid and send when status becomes `shipped`.
 - **Supplier email** – `/api/notify-supplier` only logs; add `RESEND_API_KEY` (or similar) in Doppler and implement sending.
 - **Product images** – Placeholders only. Add real assets under `public/products/` or use a CDN and set `image` in `lib/products.ts`.
-- **Supabase error messages** – API sometimes returns Supabase `error.message` in 500 responses. For stricter info hiding in production, return a generic “Database error” and keep the real message in server logs only.
-- **Next.js CVE** – README notes upgrading Next when a patched 15.x is available.
+- **Next.js CVE** – Upgraded to 15.2.9 for CVE-2025-55182; keep Next updated for future patches.
 
 ## Not gaps
 
