@@ -7,7 +7,13 @@
     "build": "doppler run -- next build",
     "build:ci": "next build",
     "start": "doppler run -- next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "netlify:env": "doppler secrets download --project her-own --config dev_personal --no-file --format env > .env.netlify",
+    "netlify:login": "npx netlify login",
+    "netlify:init": "npx netlify init",
+    "netlify:import": "npx netlify env:import .env.netlify",
+    "netlify:deploy": "npx netlify deploy --build --prod",
+    "netlify:ship": "npm run netlify:env && npx netlify env:import .env.netlify && npx netlify deploy --build --prod"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",
@@ -20,7 +26,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^11.11.0",
     "lucide-react": "^0.454.0",
-    "next": "15.2.3",
+    "next": "15.2.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "stripe": "^17.2.0",
@@ -34,6 +40,7 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "netlify-cli": "^17.0.0"
   }
 }
