@@ -56,7 +56,7 @@ Secrets sync continuously: change once in Doppler, Netlify gets it. No manual co
 2. **Endpoint URL:** `https://<your-site>.netlify.app/api/webhooks/stripe`
 3. **Events:** `checkout.session.completed` → **Add endpoint**.
 4. Copy the **Signing secret** → in **Doppler**, set or update `STRIPE_WEBHOOK_SECRET`. Doppler will sync it to Netlify.
-5. In Netlify, **Trigger deploy** again so the new secret is used.
+5. In Netlify, **Trigger deploy** again so the new secret is used. (Or push a commit to trigger deploy.)
 
 ---
 
